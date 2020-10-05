@@ -131,11 +131,12 @@ class RatingStar(models.Model):
         db_table = 'Rating_Star'
         verbose_name = 'rating star'
         verbose_name_plural = 'rating stars'
+        ordering = ['-value']
 
     value = models.SmallIntegerField('Рейтинг', default=0)
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 
 class Rating(models.Model):

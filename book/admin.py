@@ -144,7 +144,7 @@ class AuthorAdmin(admin.ModelAdmin):
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
     """Рейтинги"""
-    list_display = ['ip', 'rating_star']
+    list_display = ['ip', 'book', 'rating_star']
 
 
 @admin.register(BookShots)

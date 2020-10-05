@@ -5,6 +5,8 @@ from . import views
 urlpatterns = [
     path('', views.BookView.as_view()),
     path('filter/', views.FilterBookView.as_view(), name='filters'),
+    path('add-rating/', views.AddStarRating.as_view(), name='add_rating'),
+    path("json-filter/", views.JsonFilterBooksView.as_view(), name='json_filter'),
     path('<slug:slug>/', views.BookDetailVies.as_view(), name='book_detail'),
     path('review/<int:pk>/', views.AddReview.as_view(), name='add_review'),
     path('author/<str:slug>/', views.AuthorView.as_view(), name='author_detail'),

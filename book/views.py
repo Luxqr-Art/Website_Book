@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView
 
@@ -35,6 +36,10 @@ class BookDetailVies(GenreYear, DetailView):
     model = Book
     slug_field = 'url'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['star_form'] = RatingForm()
+        return  context
 
 # это  первый вариат передачи в базу отзывов
 # class AddReview(View):
@@ -95,3 +100,42 @@ class FilterBookView(GenreYear, ListView):
         )
 
         return queryset
+
+class JsonFilterBooksView(ListView):
+    """
+    Фильты для книг Json
+    """
+    def get_queryset(self):
+        queryset = Book.objects.filter(
+            Q(year__in=self.request.GET.getlist('year')) |
+            Q(genre__in=self.request.GET.getlist('genre'))
+        ).distinct().values('title', 'tagline', 'url', 'poster')
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        queryset = list(self.get_queryset())
+        return JsonResponse({'books': queryset}, safe=False)
+
+class AddStarRating(View):
+    """
+    Добавление рейтинга фильму
+    """
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def post(self, request):
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            Rating.objects.update_or_create(
+                ip=self.get_client_ip(request),
+                book_id=int(request.POST.get("book")),
+                defaults={'rating_star_id': int(request.POST.get("star"))}
+            )
+            return HttpResponse(status=201)
+        else:
+            return HttpResponse(status=400)
